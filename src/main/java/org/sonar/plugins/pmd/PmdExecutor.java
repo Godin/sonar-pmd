@@ -152,7 +152,16 @@ public class PmdExecutor implements BatchExtension {
         throw new IllegalStateException("Fail to create the project classloader. Classpath element is invalid: " + file, e);
       }
     }
-    return new URLClassLoader(urls.toArray(new URL[urls.size()]), null);
+    return new URLClassLoader(urls.toArray(new URL[urls.size()]), null) {
+      @Override
+      protected synchronized Class<?> loadClass(String s, boolean b) throws ClassNotFoundException {
+        try {
+          return super.loadClass(s, b);
+        } catch (IncompatibleClassChangeError e) {
+          throw new RuntimeException("ClassName " + s, e);
+        }
+      }
+    };
   }
 
 }
